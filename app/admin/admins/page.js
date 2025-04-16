@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { FaUser, FaEnvelope, FaPhone, FaUserTag, FaCalendarAlt, FaEdit, FaTrash, FaPlus, FaSearch, FaExclamationCircle } from 'react-icons/fa';
 import authService from '../../../src/services/authService';
 import { requireAuth } from '../../../src/contexts/AuthContext';
-import AdminAddModal from '../../../src/components/admin/AdminAddModal';
-import AdminEditModal from '../../../src/components/admin/AdminEditModal';
-import DeleteConfirmModal from '../../../src/components/admin/DeleteConfirmModal';
+import AdminAddModal from '../../../app/components/admin/AdminAddModal';
+import AdminEditModal from '../../../app/components/admin/AdminEditModal';
+import DeleteConfirmModal from '../../../app/components/admin/DeleteConfirmModal';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

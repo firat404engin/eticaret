@@ -1,0 +1,570 @@
+"use client";
+
+import React, { useState } from 'react';
+import supabase from '../../utils/supabase';
+import NotificationWidget from '../NotificationWidget';
+
+// Admin Login Bileşeni
+const AdminLogin = ({ onLogin }) => {
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Gerçek uygulamada API'ye istek yapılacak
+      // Örnek başarılı login simülasyonu
+      if (credentials.email === 'admin@example.com' && credentials.password === 'password') {
+        setTimeout(() => {
+          setIsLoading(false);
+          onLogin({ name: 'Admin User', email: credentials.email });
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          setIsLoading(false);
+          setError('Geçersiz e-posta veya şifre');
+        }, 1000);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      setError('Giriş yapılırken bir hata oluştu');
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+      <h2 className="text-2xl font-bold text-center mb-6">Admin Girişi</h2>
+      
+      {error && (
+        <div className="p-4 mb-6 bg-red-100 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit}>
+        <div className="mb-6">
+          <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">
+            E-posta
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={credentials.email}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        
+        <div className="mb-6">
+          <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">
+            Şifre
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={credentials.password}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+        >
+          {isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// Ürün Yönetim Bileşeni
+const ProductManagement = () => {
+  const [notification, setNotification] = useState(null);
+  const [products, setProducts] = useState([]);
+
+  // Ürünleri Supabase'den çek
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      const { data, error } = await supabase.from('products').select('*');
+      if (!error) setProducts(data);
+    };
+    fetchProducts();
+  }, []);
+  
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    image_url: '',
+    video_url: ''
+  });
+  
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setIsEditing(true);
+  };
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditingProduct(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleNewProductChange = (e) => {
+    const { name, value } = e.target;
+    setNewProduct(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleUpdate = () => {
+    // Gerçek uygulamada API'ye istek yapılacak
+    setProducts(products.map(p => 
+      p.id === editingProduct.id ? editingProduct : p
+    ));
+    setIsEditing(false);
+    setEditingProduct(null);
+  };
+  
+  const handleAddProduct = async () => {
+    // Ürün ekle
+    const { error } = await supabase.from('products').insert([newProduct]);
+    if (!error) {
+      const { data } = await supabase.from('products').select('*');
+      setProducts(data);
+      setNotification({ id: `add-${Date.now()}`, message: 'Ürün başarıyla eklendi!', ts: Date.now() });
+    } else {
+      setNotification({ id: `err-add-${Date.now()}`, message: 'Ürün eklenirken hata oluştu!', ts: Date.now() });
+    }
+    setNewProduct({
+      name: '',
+      description: '',
+      price: '',
+      stock: '',
+      image_url: '',
+      video_url: ''
+    });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  
+  const handleDelete = async (id) => {
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (!error) {
+      // Silme başarılıysa ürünleri tekrar çek
+      const { data } = await supabase.from('products').select('*');
+      setProducts(data);
+      setNotification({ id: `del-${id}`, message: 'Ürün başarıyla silindi!', ts: Date.now() });
+    } else {
+      setNotification({ id: `err-${id}`, message: 'Ürün silinirken hata oluştu!', ts: Date.now() });
+    }
+    setTimeout(() => setNotification(null), 4000);
+  };
+  
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      {notification && (
+        <NotificationWidget notification={notification} />
+        <div className="mb-4 p-3 rounded bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100">
+          {notification.message}
+        </div>
+      )}
+      <h3 className="text-xl font-bold mb-6">Ürün Yönetimi</h3>
+      
+      {isEditing ? (
+        <div className="mb-8 bg-gray-50 p-4 rounded-md">
+          <h4 className="text-lg font-semibold mb-4">Ürün Düzenle</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Ürün Adı</label>
+              <input
+                type="text"
+                name="name"
+                value={editingProduct.name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Fiyat</label>
+              <input
+                type="number"
+                name="price"
+                value={editingProduct.price}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Stok</label>
+              <input
+                type="number"
+                name="stock"
+                value={editingProduct.stock}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Görsel URL</label>
+              <input
+                type="text"
+                name="image_url"
+                value={editingProduct.image_url}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 font-medium mb-2">Video URL</label>
+              <input
+                type="text"
+                name="video_url"
+                value={editingProduct.video_url}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 font-medium mb-2">Açıklama</label>
+              <textarea
+                name="description"
+                value={editingProduct.description}
+                onChange={handleInputChange}
+                rows="4"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg mr-2"
+            >
+              İptal
+            </button>
+            <button
+              onClick={handleUpdate}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Kaydet
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-8 bg-gray-50 p-4 rounded-md">
+          <h4 className="text-lg font-semibold mb-4">Yeni Ürün Ekle</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Ürün Adı</label>
+              <input
+                type="text"
+                name="name"
+                value={newProduct.name}
+                onChange={handleNewProductChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Fiyat</label>
+              <input
+                type="number"
+                name="price"
+                value={newProduct.price}
+                onChange={handleNewProductChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Stok</label>
+              <input
+                type="number"
+                name="stock"
+                value={newProduct.stock}
+                onChange={handleNewProductChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Görsel URL</label>
+              <input
+                type="text"
+                name="image_url"
+                value={newProduct.image_url}
+                onChange={handleNewProductChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 font-medium mb-2">Video URL</label>
+              <input
+                type="text"
+                name="video_url"
+                value={newProduct.video_url}
+                onChange={handleNewProductChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 font-medium mb-2">Açıklama</label>
+              <textarea
+                name="description"
+                value={newProduct.description}
+                onChange={handleNewProductChange}
+                rows="4"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={handleAddProduct}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Ürün Ekle
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr className="bg-gray-200 text-gray-700">
+              <th className="py-3 px-4 text-left">ID</th>
+              <th className="py-3 px-4 text-left">Ürün Adı</th>
+              <th className="py-3 px-4 text-left">Fiyat</th>
+              <th className="py-3 px-4 text-left">Stok</th>
+              <th className="py-3 px-4 text-left">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map(product => (
+              <tr key={product.id} className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4">{product.id}</td>
+                <td className="py-3 px-4">{product.name}</td>
+                <td className="py-3 px-4">{product.price} TL</td>
+                <td className="py-3 px-4">{product.stock}</td>
+                <td className="py-3 px-4">
+                  <button
+                    onClick={() => handleEditClick(product)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mr-2 text-sm"
+                  >
+                    Düzenle
+                  </button>
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                  >
+                    Sil
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// Orders Yönetim Bileşeni
+const OrdersManagement = () => {
+  const [orders, setOrders] = useState([
+    {
+      id: 1,
+      customer_name: "Ali Yılmaz",
+      email: "ali@example.com",
+      phone: "5551234567",
+      items: [
+        { id: 1, name: "Ürün 1", quantity: 2, price: 99.99 },
+        { id: 2, name: "Ürün 2", quantity: 1, price: 149.99 }
+      ],
+      total: 349.97,
+      status: "beklemede",
+      date: "2023-04-10T14:30:00"
+    },
+    {
+      id: 2,
+      customer_name: "Ayşe Demir",
+      email: "ayse@example.com",
+      phone: "5557654321",
+      items: [
+        { id: 3, name: "Ürün 3", quantity: 1, price: 199.99 }
+      ],
+      total: 199.99,
+      status: "tamamlandı",
+      date: "2023-04-09T10:15:00"
+    }
+  ]);
+
+  const updateOrderStatus = (orderId, newStatus) => {
+    // Gerçek uygulamada API'ye istek yapılacak
+    setOrders(orders.map(order => 
+      order.id === orderId ? { ...order, status: newStatus } : order
+    ));
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'beklemede': return 'bg-yellow-100 text-yellow-800';
+      case 'işleniyor': return 'bg-blue-100 text-blue-800';
+      case 'tamamlandı': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+      <h3 className="text-xl font-bold mb-6">Sipariş Yönetimi</h3>
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr className="bg-gray-200 text-gray-700">
+              <th className="py-3 px-4 text-left">ID</th>
+              <th className="py-3 px-4 text-left">Müşteri</th>
+              <th className="py-3 px-4 text-left">Ürünler</th>
+              <th className="py-3 px-4 text-left">Toplam</th>
+              <th className="py-3 px-4 text-left">Tarih</th>
+              <th className="py-3 px-4 text-left">Durum</th>
+              <th className="py-3 px-4 text-left">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map(order => (
+              <tr key={order.id} className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4">{order.id}</td>
+                <td className="py-3 px-4">
+                  <div>{order.customer_name}</div>
+                  <div className="text-sm text-gray-600">{order.email}</div>
+                  <div className="text-sm text-gray-600">{order.phone}</div>
+                </td>
+                <td className="py-3 px-4">
+                  <ul className="list-disc list-inside text-sm">
+                    {order.items.map(item => (
+                      <li key={item.id}>
+                        {item.name} x {item.quantity} ({item.price} TL)
+                      </li>
+                    ))}
+                  </ul>
+                </td>
+                <td className="py-3 px-4 font-semibold">{order.total} TL</td>
+                <td className="py-3 px-4">{formatDate(order.date)}</td>
+                <td className="py-3 px-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusClass(order.status)}`}>
+                    {order.status}
+                  </span>
+                </td>
+                <td className="py-3 px-4">
+                  <select
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                    className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="beklemede">Beklemede</option>
+                    <option value="işleniyor">İşleniyor</option>
+                    <option value="tamamlandı">Tamamlandı</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// Ana Admin Bileşeni
+const Admin = () => {
+  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('products');
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  if (!user) {
+    return (
+      <div className="bg-gray-100 min-h-screen py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <AdminLogin onLogin={handleLogin} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-100 min-h-screen py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold">Admin Paneli</h2>
+          <div className="flex items-center">
+            <span className="mr-4">Merhaba, {user.name}</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Çıkış Yap
+            </button>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md mb-8">
+          <div className="flex border-b">
+            <button
+              className={`px-6 py-3 font-semibold ${activeTab === 'products' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'}`}
+              onClick={() => setActiveTab('products')}
+            >
+              Ürünler
+            </button>
+            <button
+              className={`px-6 py-3 font-semibold ${activeTab === 'orders' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'}`}
+              onClick={() => setActiveTab('orders')}
+            >
+              Siparişler
+            </button>
+          </div>
+        </div>
+        
+        {activeTab === 'products' && <ProductManagement />}
+        {activeTab === 'orders' && <OrdersManagement />}
+      </div>
+    </div>
+  );
+};
+
+export default Admin; 

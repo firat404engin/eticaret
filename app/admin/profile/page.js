@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FaUser, FaEnvelope, FaPhone, FaUserCog, FaCamera, FaUpload, FaEdit, FaSave, FaSpinner } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import LoadingSpinner from '../../../src/components/common/LoadingSpinner';
+import LoadingSpinner from '../../../app/components/common/LoadingSpinner';
 import AuthService from '../../../src/services/authService';
 import supabase from '../../../src/utils/supabase';
 import { toast, ToastContainer } from 'react-toastify';
