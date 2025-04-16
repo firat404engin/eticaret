@@ -16,10 +16,8 @@ export default function AdminLayout({ children }) {
   return (
     <AuthProvider>
       {isLoginPage ? (
-        <div className={`${inter.className} min-h-screen bg-gray-900 flex items-center justify-center`}>
-          <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-            {children}
-          </div>
+        <div className={`${inter.className} min-h-screen`}>
+          {children}
         </div>
       ) : (
         <div className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors`}>

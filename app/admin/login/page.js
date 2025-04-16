@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../../../src/contexts/AuthContext';
 
@@ -10,6 +10,12 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
+  // Bilgileri otomatik doldur (geliştirme kolaylığı için)
+  useEffect(() => {
+    setCredentials({ email: 'admin@example.com', password: 'password' });
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,19 +28,25 @@ export default function LoginPage() {
     setError(null);
     
     try {
-      // Demo login logic - replace with actual authentication
+      // Demo login kontrolü
       if (credentials.email === 'admin@example.com' && credentials.password === 'password') {
+        setLoginSuccess(true);
+        
         setTimeout(() => {
           setIsLoading(false);
           // AuthContext aracılığıyla giriş yap
-          login({ name: 'Admin User', email: credentials.email, role: 'admin' });
-          // AuthContext router yönlendirmesini zaten halledecek
-        }, 1000);
+          login({ 
+            name: 'Admin User', 
+            email: credentials.email, 
+            role: 'admin' 
+          });
+          // AuthContext router yönlendirmesini otomatik yapacak
+        }, 800);
       } else {
         setTimeout(() => {
           setIsLoading(false);
           setError('Geçersiz e-posta veya şifre');
-        }, 1000);
+        }, 800);
       }
     } catch (error) {
       setIsLoading(false);
@@ -43,11 +55,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden w-full max-w-5xl flex">
-        {/* Left Side - Illustration */}
-        <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600 p-12 relative">
-          <div className="absolute inset-0 bg-black opacity-10 pattern-dots-lg"></div>
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden w-full max-w-4xl flex flex-col lg:flex-row">
+        {/* Sol Taraf - Görsel */}
+        <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 p-10 relative">
+          <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="relative z-10 h-full flex flex-col justify-between">
             <div>
               <h2 className="text-3xl font-bold text-white">Admin Portal</h2>
@@ -56,12 +68,12 @@ export default function LoginPage() {
               </p>
             </div>
             
-            {/* Decorative Elements */}
+            {/* Süsleyici Elementler */}
             <div className="relative">
               <div className="w-64 h-64 bg-white bg-opacity-10 absolute -bottom-20 -left-20 rounded-full"></div>
               <div className="w-40 h-40 bg-white bg-opacity-10 absolute -top-10 -right-10 rounded-full"></div>
               
-              {/* Center Illustration */}
+              {/* Orta İllüstrasyon */}
               <div className="relative z-10 mt-10">
                 <div className="w-72 mx-auto">
                   <svg viewBox="0 0 711 602" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full drop-shadow-xl">
@@ -83,32 +95,33 @@ export default function LoginPage() {
           </div>
         </div>
         
-        {/* Right Side - Login Form */}
-        <div className="w-full lg:w-1/2 p-8 sm:p-12">
-          <div className="max-w-md mx-auto">
-            <div className="text-center mb-8">
+        {/* Sağ Taraf - Giriş Formu */}
+        <div className="w-full lg:w-1/2 p-6 sm:p-10">
+          <div className="w-full max-w-md mx-auto">
+            <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Girişi</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">Yönetim panelinize erişmek için giriş yapın</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                Yönetim panelinize erişmek için giriş yapın
+              </p>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   E-posta Adresi
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-gray-400" />
+                    <FaUser className="h-4 w-4 text-gray-400" />
                   </div>
                   <input
                     id="email"
                     name="email"
                     type="email"
                     autoComplete="email"
-                    required
                     value={credentials.email}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="admin@example.com"
                   />
                 </div>
@@ -120,25 +133,25 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaLock className="h-5 w-5 text-gray-400" />
+                    <FaLock className="h-4 w-4 text-gray-400" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    required
                     value={credentials.password}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="appearance-none block w-full pl-10 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
                   >
-                    {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                    {showPassword ? <FaEyeSlash className="h-4 w-4" /> : <FaEye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -169,11 +182,17 @@ export default function LoginPage() {
                 </div>
               )}
               
+              {loginSuccess && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3 text-sm text-green-600 dark:text-green-400">
+                  Giriş başarılı! Yönlendiriliyorsunuz...
+                </div>
+              )}
+              
               <div>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-75 disabled:cursor-not-allowed transition-colors"
+                  className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-75 disabled:cursor-not-allowed transition-colors"
                 >
                   {isLoading ? (
                     <>
@@ -188,9 +207,12 @@ export default function LoginPage() {
               </div>
             </form>
             
-            <div className="mt-8 text-center">
+            <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Demo giriş bilgileri: <span className="font-semibold">admin@example.com / password</span>
+                Demo giriş bilgileri:
+              </p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">
+                admin@example.com / password
               </p>
             </div>
           </div>
