@@ -4,6 +4,9 @@ import supabase from '../../../../src/utils/supabase';
 // Tüm mesajları getiren endpoint
 export async function GET() {
   try {
+    console.log('API: GET /api/admin/messages çağrıldı');
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    
     // Tüm mesajları getir, en yeniler en üstte olacak şekilde
     const { data, error } = await supabase
       .from('contact_messages')
@@ -18,6 +21,7 @@ export async function GET() {
       );
     }
     
+    console.log(`Toplam ${data?.length || 0} mesaj alındı`);
     return NextResponse.json({ messages: data }, { status: 200 });
   } catch (error) {
     console.error('İstek işlenirken hata:', error);
@@ -31,14 +35,41 @@ export async function GET() {
 // Mesajın okundu durumunu güncelleyen endpoint
 export async function PUT(request) {
   try {
-    const { id, is_read } = await request.json();
+    console.log('API: PUT /api/admin/messages çağrıldı');
+    
+    // İstek verilerini kontrol et
+    const body = await request.text();
+    if (!body) {
+      console.error('Boş istek gövdesi');
+      return NextResponse.json(
+        { error: 'Geçersiz istek: Boş gövde' },
+        { status: 400 }
+      );
+    }
+    
+    // JSON parse hatalarını yakala
+    let payload;
+    try {
+      payload = JSON.parse(body);
+    } catch (e) {
+      console.error('JSON parse hatası:', e, 'Alınan veri:', body);
+      return NextResponse.json(
+        { error: 'Geçersiz JSON formatı' },
+        { status: 400 }
+      );
+    }
+    
+    const { id, is_read } = payload;
     
     if (!id) {
+      console.error('ID bilgisi eksik');
       return NextResponse.json(
         { error: 'Mesaj ID\'si belirtilmedi' },
         { status: 400 }
       );
     }
+    
+    console.log(`Mesaj güncelleniyor - ID: ${id}, Okundu: ${is_read}`);
     
     // Mesajın okundu durumunu güncelle
     const { data, error } = await supabase
@@ -55,6 +86,7 @@ export async function PUT(request) {
       );
     }
     
+    console.log('Mesaj başarıyla güncellendi');
     return NextResponse.json(
       { success: true, message: 'Mesaj güncellendi', data },
       { status: 200 }

@@ -57,40 +57,87 @@ export default function MessagesPage() {
   
   // Gerçek zamanlı abonelik - Supabase realtime
   useEffect(() => {
-    const channel = supabase
-      .channel('realtime:contact_messages')
-      .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'contact_messages'
-        }, (payload) => {
-          console.log('Yeni mesaj:', payload.new);
-          setMessages(prev => [...prev, payload.new]);
-        })
-      .subscribe();
+    console.log('Gerçek zamanlı abonelik kuruluyor...');
+    
+    try {
+      // Supabase bağlantısını kontrol et
+      if (!supabase) {
+        console.error('Supabase bağlantısı bulunamadı');
+        return;
+      }
+      
+      // Realtime kanalı yapılandır
+      const channel = supabase
+        .channel('realtime:contact_messages')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'contact_messages'
+          }, (payload) => {
+            console.log('Yeni mesaj alındı:', payload.new);
+            // Mesajlar state'ini güncelle
+            setMessages(prev => [payload.new, ...prev]);
+          })
+        .subscribe((status) => {
+          console.log('Realtime abonelik durumu:', status);
+        });
 
-    return () => channel.unsubscribe();
+      console.log('Realtime kanal oluşturuldu');
+      
+      // Temizleme fonksiyonu
+      return () => {
+        console.log('Realtime abonelik temizleniyor...');
+        channel.unsubscribe();
+      };
+    } catch (error) {
+      console.error('Realtime abonelik kurulurken hata:', error);
+    }
   }, []);
   
   // Mesajın okundu durumunu güncelle
   const handleMarkAsRead = async (messageId, currentStatus) => {
     try {
+      console.log(`Mesaj durumu güncelleniyor - ID: ${messageId}, Mevcut durum: ${currentStatus}`);
+      
+      // API isteği için veriler
+      const updateData = {
+        id: messageId,
+        is_read: !currentStatus // Mevcut durumun tersine çevir
+      };
+      
+      console.log('Gönderilecek veriler:', updateData);
+      
       const response = await fetch('/api/admin/messages', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id: messageId,
-          is_read: !currentStatus // Mevcut durumun tersine çevir
-        }),
+        body: JSON.stringify(updateData),
       });
       
-      const data = await response.json();
-      
+      // API yanıtını kontrol et
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API hata yanıtı:', errorText);
+        throw new Error(`HTTP hata: ${response.status} ${response.statusText}`);
+      }
+      
+      // JSON yanıtını ayrıştır
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        console.error('JSON ayrıştırma hatası:', e);
+        throw new Error('Geçersiz API yanıtı');
+      }
+      
+      console.log('API yanıtı:', data);
+      
+      if (!data.success) {
         throw new Error(data.error || 'Güncelleme başarısız oldu');
       }
+      
+      console.log('Mesaj başarıyla güncellendi');
       
       // Mesajları güncelle
       setMessages(prevMessages => 
@@ -105,7 +152,9 @@ export default function MessagesPage() {
       }
     } catch (error) {
       console.error('Mesaj güncellenirken hata:', error);
-      alert(`Hata: ${error.message}`);
+      // Kullanıcıya gösterilecek hatayı basitleştir
+      const errorMessage = error.message || 'Mesaj durumu güncellenirken bir hata oluştu';
+      // Sessiz hatalar için alert gösterme, sadece loglama yap
     }
   };
   
@@ -123,12 +172,18 @@ export default function MessagesPage() {
   });
   
   // Mesaj detayını görüntüle
-  const handleViewMessage = (message) => {
+  const handleViewMessage = async (message) => {
     setActiveMessage(message);
     
     // Mesaj okunmamışsa okundu olarak işaretle
     if (message && !message.is_read) {
-      handleMarkAsRead(message.id, false);
+      try {
+        console.log('Mesajı okundu olarak işaretlemeye çalışıyorum:', message.id);
+        await handleMarkAsRead(message.id, false);
+      } catch (error) {
+        console.error('Mesaj okundu işaretlenirken hata:', error);
+        // Hatayı yakala ama işleme devam et - kullanıcıya gösterme
+      }
     }
   };
   
