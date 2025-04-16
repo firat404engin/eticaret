@@ -17,36 +17,29 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Sayfa yüklendiğinde çerez ve localStorage'dan kullanıcı bilgilerini kontrol et
     const checkAuth = () => {
-      // İlk olarak cookie'de token var mı kontrol et
-      const adminToken = Cookies.get('adminToken');
+      // İlk olarak cookie'de admin var mı kontrol et
+      const adminCookie = Cookies.get('admin');
       
-      if (!adminToken) {
+      if (!adminCookie) {
         // Cookie yoksa kullanıcı giriş yapmamış demektir
-        localStorage.removeItem('adminUser'); // Yanlış veri durumunu temizle
+        localStorage.removeItem('admin'); // Yanlış veri durumunu temizle
         setUser(null);
         setLoading(false);
         setIsAuthChecked(true);
         return;
       }
       
-      // Token varsa kullanıcı bilgisini localStorage'dan al
-      const userData = localStorage.getItem('adminUser');
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          // Kullanıcı bilgilerinin geçerli olduğundan emin ol
-          if (parsedUser && parsedUser.email) {
-            setUser(parsedUser);
-          } else {
-            // Geçersiz kullanıcı verisi, çıkış yap
-            handleLogout();
-          }
-        } catch (e) {
-          // JSON parse hatası, çıkış yap
+      // Admin verisi varsa parse et
+      try {
+        const adminData = JSON.parse(adminCookie);
+        if (adminData && adminData.id && adminData.email) {
+          setUser(adminData);
+        } else {
+          // Eksik veri, çıkış yap
           handleLogout();
         }
-      } else {
-        // localStorage boş ama token var, bu tutarsız bir durum
+      } catch (error) {
+        // JSON parse hatası, çıkış yap
         handleLogout();
       }
       
@@ -59,8 +52,8 @@ export function AuthProvider({ children }) {
   
   // Çıkış yapmak için yardımcı fonksiyon
   const handleLogout = () => {
-    Cookies.remove('adminToken');
-    localStorage.removeItem('adminUser');
+    Cookies.remove('admin', { path: '/' });
+    localStorage.removeItem('admin');
     setUser(null);
   };
 
@@ -97,11 +90,9 @@ export function AuthProvider({ children }) {
     // Kullanıcı bilgilerini ayarla
     setUser(userData);
     
-    // localStorage ve Cookie'ye kaydet
-    localStorage.setItem('adminUser', JSON.stringify(userData));
-    
-    // 7 gün geçerli bir token oluştur
-    Cookies.set('adminToken', 'admin_session_token', { expires: 7, path: '/' });
+    // Cookie'ye kaydet (localStorage yerine sadece cookie kullanılacak)
+    Cookies.set('admin', JSON.stringify(userData), { expires: 7, path: '/' });
+    localStorage.setItem('admin', JSON.stringify(userData));
     
     // Admin paneline yönlendir
     router.push('/admin');
