@@ -5,7 +5,7 @@ import OrderForm from './OrderForm';
 
 const CartItem = ({ item, updateQuantity, removeItem }) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center border-b pb-4 mb-4 border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col sm:flex-row justify-between items-center border-b pb-4 mb-4 border-gray-200 dark:border-gray-700 px-2">
       <div className="flex items-center mb-4 sm:mb-0">
         <img 
           src={item.image_url || '/product-placeholder.jpg'} 
@@ -13,8 +13,8 @@ const CartItem = ({ item, updateQuantity, removeItem }) => {
           className="w-16 h-16 object-cover rounded-md mr-4"
         />
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
-          <p className="text-gray-600 dark:text-gray-300">{item.price} TL</p>
+          <h3 className="font-bold text-gray-800 dark:text-gray-100 text-lg">{item.name}</h3>
+          <p className="text-gray-700 dark:text-gray-300 font-medium">{item.price} TL</p>
         </div>
       </div>
       <div className="flex items-center">
@@ -22,21 +22,21 @@ const CartItem = ({ item, updateQuantity, removeItem }) => {
           <button 
             onClick={() => updateQuantity(item.id, item.quantity - 1)}
             disabled={item.quantity <= 1}
-            className="px-3 py-1 disabled:opacity-50"
+            className="px-3 py-1 disabled:opacity-50 font-bold text-lg hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition"
           >
             -
           </button>
           <span className="px-3 py-1">{item.quantity}</span>
           <button 
             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            className="px-3 py-1 text-gray-600 dark:text-gray-300"
+            className="px-3 py-1 font-bold text-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition"
           >
             +
           </button>
         </div>
         <button 
           onClick={() => removeItem(item.id)}
-          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+          className="ml-2 text-red-600 hover:text-white bg-red-100 hover:bg-red-600 dark:text-red-400 dark:hover:text-white dark:bg-red-900/40 dark:hover:bg-red-600 rounded px-3 py-1 font-semibold transition"
         >
           Kaldır
         </button>
@@ -47,7 +47,7 @@ const CartItem = ({ item, updateQuantity, removeItem }) => {
 
 const OrderSuccess = ({ order }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
+    <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl p-8 text-center border border-gray-200 dark:border-gray-800">
       <div className="text-green-600 dark:text-green-400 text-5xl mb-4">✓</div>
       <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Siparişiniz Başarıyla Alındı!</h2>
       <p className="text-gray-600 dark:text-gray-300 mb-6">
@@ -156,7 +156,7 @@ const Cart = () => {
   return (
     <div className="bg-gray-50 py-16 px-4">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold mb-8 text-center">
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-900 dark:text-white tracking-tight">
           {isCheckout ? 'Sipariş Bilgileri' : 'Sepetim'}
         </h2>
         
