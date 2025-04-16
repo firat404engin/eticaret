@@ -4,7 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 
 // Client component'i dynamic import ile yükleyelim (CartProvider ile çalışması için)
-const CartWithProvider = dynamic(() => import('../../app/components/Cart'), {
+const CartWithProvider = dynamic(() => import('../components/Cart'), {
   ssr: false,
 });
 
