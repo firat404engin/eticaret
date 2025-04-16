@@ -173,17 +173,35 @@ export default function MessagesPage() {
   
   // Mesaj detayını görüntüle
   const handleViewMessage = async (message) => {
-    setActiveMessage(message);
-    
-    // Mesaj okunmamışsa okundu olarak işaretle
-    if (message && !message.is_read) {
-      try {
-        console.log('Mesajı okundu olarak işaretlemeye çalışıyorum:', message.id);
-        await handleMarkAsRead(message.id, false);
-      } catch (error) {
-        console.error('Mesaj okundu işaretlenirken hata:', error);
-        // Hatayı yakala ama işleme devam et - kullanıcıya gösterme
+    try {
+      // Mesaj detayını göster
+      setActiveMessage(message);
+      
+      // Mesaj okunmamışsa okundu olarak işaretle
+      if (message && !message.is_read) {
+        console.log('Mesaj okundu olarak işaretleniyor:', message.id);
+        // Optimistik UI güncellemesi - önce UI'ı güncelle
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === message.id ? { ...msg, is_read: true } : msg
+          )
+        );
+        
+        // Mesajı okundu olarak işaretle (API çağrısı)
+        try {
+          await handleMarkAsRead(message.id, false);
+        } catch (error) {
+          console.error('Mesaj okundu işaretlenirken hata:', error);
+          // Hata durumunda UI'ı eski haline getir
+          setMessages(prevMessages => 
+            prevMessages.map(msg => 
+              msg.id === message.id ? { ...msg, is_read: false } : msg
+            )
+          );
+        }
       }
+    } catch (error) {
+      console.error('Mesaj görüntülenirken hata:', error);
     }
   };
   
@@ -264,14 +282,6 @@ export default function MessagesPage() {
                 Okunmuş
               </button>
             </div>
-            
-            <button
-              onClick={() => fetchMessages()}
-              className="p-2 rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/30"
-              title="Yenile"
-            >
-              {loading ? <FaSpinner className="animate-spin" size={16} /> : <FaSyncAlt size={16} />}
-            </button>
           </div>
         </div>
       </div>
