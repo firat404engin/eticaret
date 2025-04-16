@@ -1,0 +1,138 @@
+## 1. Proje Kuralları  
+
+### 1.1 Genel Kurallar    
+- **Temiz Kod:** Kodda açıklayıcı yorumlar yer almalı. Fonksiyon ve değişken adları anlamlı ve açıklayıcı olmalıdır.  
+- **Hata Yönetimi:** Hatalar uygun bir şekilde yönetilmeli ve kullanıcı dostu hata mesajları gösterilmelidir.  
+- **Responsive Tasarım:** Tüm arayüz bileşenleri mobil uyumlu olmalıdır.  
+- **Erişilebilirlik:** Web sayfası erişilebilirlik standartlarına uygun olmalıdır (örneğin, ARIA etiketleri).  
+
+### 1.2 Geliştirme Ortamı  
+- **Dil:** JavaScript (ES6+)  
+- **Framework:** Next.js  
+- **CSS:** TailwindCSS  
+- **Veritabanı:** Supabase  
+
+## 2. Bileşen Yapısı  
+
+### 2.1 Bileşenlerin Yapısı  
+- Tüm bileşenler src/components veya components klasöründe bulundurulacak.  
+- Her bileşenin dosya yapısı:  
+  - **Bileşen Dosyası (Örn. Hero.js)**  
+  - **Stil Dosyası:** TailwindCSS ile stillendirme yapılacaktır; ayrı stil dosyası gerekmez.  
+  - **Test Dosyası (Örn. Hero.test.js)** (isteğe bağlı)  
+
+### 2.2 Temel Bileşenler  
+- Hero: Web sayfasının ana açılış görselini içerir.  
+- About: Hakkımda kısmını gösterir.  
+- Products: Ürünlerin listeleneceği bileşen.  
+- ProductDetail: Ürün detayını gösterir.  
+- Contact: İletişim formu.  
+- Cart: Sepet bileşeni.  
+- Admin: Yönetici paneli ve içerik düzenleme bileşeni.  
+
+## 3. Projenin İçeriği  
+
+### 3.1 Ana Sayfa  
+- **Hero Bölümü:** Göz alıcı bir görsel ve çağrı butonu.  
+- **Hakkımda Bölümü:** Kısa bir biyografi.  
+- **Ürünler Bölümü:** Ürünlerin kısa açıklamaları ve "Sepete Ekle" butonları.  
+- **Videolar Bölümü:** Kullanıcıların izleyebileceği video bağlantıları.  
+
+### 3.2 Ürün Sayfası  
+- **Ürün Detayı:**  
+  - Ürün resmi, başlık ve fiyat ortada görünecek.  
+  - Alt kısımda:  
+    - Ürün açıklaması.  
+    - İçindekiler listesi.  
+    - İlgili YouTube videosu.  
+
+### 3.3 Hakkımda Sayfası  
+- Detaylı biyografi ve iş deneyimleri.  
+
+### 3.4 İletişim Sayfası  
+- Ad, e-posta ve mesaj alanı bulunan iletişim formu.  
+
+### 3.5 Admin Paneli  
+- Giriş yapma alanı.  
+- Ürün detaylarını, açıklamalarını ve videoları düzenleme özelliği.  
+
+### 3.6 Sepet ve Satış Ekranı  
+- Kullanıcının sepetinde bulunan ürünleri gösteren bir ekran.  
+- Tutar hesaplaması ve "Satın Al" butonu.  
+
+## 4. Supabase Kullanımı  
+- Kullanıcı verileri ve ürün bilgileri Supabase üzerinden yönetilecektir.  
+- **Veritabanı Yapısı:**  
+  - **Users:** Kullanıcı bilgileri.  
+  - **Products:** Ürün bilgileri (ad, açıklama, fiyat, stok durumu).  
+  - **Videos:** Video bağlantıları.  
+
+## 5. Önerilen Kütüphaneler  
+- **Next.js Router:** Sayfa yönlendirmeleri için Next.js'in yerleşik yönlendiricisi kullanılacak.  
+- **Axios veya Fetch:** API çağrıları için.  
+- **React Query:** Veri yönetimi ve senkronizasyon için.  
+- **Yup veya Formik:** Form yönetimi için.  
+
+## 6. Geliştirme Süreci  
+- Herhangi bir yeni özellik eklenmeden önce ilgili bileşen üzerinde tartışılarak onay alınmalıdır.  
+- Tüm kodlar, belirli bir standartta yazılmalı ve gözden geçirilmeli.  
+
+## 7. TailwindCSS Kullanımı  
+- **Kurulum:** TailwindCSS, postcss ile birlikte projenize dahil edilecektir.  
+- **Kullanım:** TailwindCSS sınıfları, JSX içinde doğrudan bileşenlerde kullanılacaktır. Örnek:  
+  
+jsx  
+  <div className="bg-blue-500 text-white p-4 rounded">  
+    Merhaba,**  
+  </div>
+
+  8. Supabase Entegrasyon Detayları
+8.1 Sipariş Süreci
+Kullanıcı girişi olmayacak. Sipariş işlemi doğrudan web üzerinden gerçekleşecek.
+
+Sipariş formu:
+
+Ad Soyad
+
+E-posta
+
+Telefon
+
+Ürün ve adet bilgisi
+
+Açıklama (isteğe bağlı)
+
+Sipariş tamamlandığında:
+
+Sipariş veritabanına kaydedilecek (orders tablosu).
+
+Kullanıcıya e-posta ile bilgilendirme yapılacak (örneğin SMTP veya Supabase Edge Functions ile).
+
+8.2 Ürün Yönetimi (Admin Paneli)
+Ürünler Supabase üzerinden eklenecek, güncellenecek, silinecek.
+
+Ürün tablosu:
+
+id, name, description, price, stock, image_url, video_url
+
+Admin paneli üzerinden bu işlemler dinamik olarak yönetilecek.
+
+8.3 Sipariş Görüntüleme
+Supabase'deki orders tablosu üzerinden verilen tüm siparişler listelenecek.
+
+Her sipariş için:
+
+Kullanıcı bilgileri
+
+Sipariş edilen ürünler ve adet
+
+Sipariş tarihi
+
+Sipariş durumu (örn. beklemede, işleniyor, tamamlandı)
+
+8.4 İletişim Formu
+Kullanıcının ilettiği mesajlar Supabase’deki contacts tablosuna kaydedilecek.
+
+Admin panelinde tüm gelen mesajlar listelenecek.
+
+Tablo yapısı: id, name, email, message, created_at
