@@ -41,7 +41,7 @@ const AdminSidebar = () => {
     { name: 'Ürünler', icon: <FaBox />, path: '/admin/products' },
     { name: 'Siparişler', icon: <FaShoppingCart />, path: '/admin/orders' },
     { name: 'Adminler', icon: <FaUsers />, path: '/admin/admins' },
-    { name: 'İletişim Formları', icon: <FaEnvelope />, path: '/admin/contacts' },
+    { name: 'İletişim Formları', icon: <FaEnvelope />, path: '/admin/messages' },
     { name: 'İstatistikler', icon: <FaChartBar />, path: '/admin/stats' },
     { name: 'Profil', icon: <FaUserCircle />, path: '/admin/profile' }
   ];
