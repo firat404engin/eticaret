@@ -1,21 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../../../src/contexts/AuthContext';
+import { useSearchParams } from 'next/navigation';
+import authService from '../../../src/services/authService';
 
-export default function LoginPage() {
+// Suspense içinde render edilecek login bileşeni
+function LoginContent() {
   const { login } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const searchParams = useSearchParams();
+  const fromPath = searchParams.get('from');
 
-  // Bilgileri otomatik doldur (geliştirme kolaylığı için)
+  // Başlangıçta oturum açma hatası varsa göster
   useEffect(() => {
-    setCredentials({ email: 'admin@example.com', password: 'password' });
-  }, []);
+    if (fromPath) {
+      setError('Lütfen devam etmek için giriş yapın');
+    }
+  }, [fromPath]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,29 +31,39 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Giriş bilgilerini doğrula
+    if (!credentials.email || !credentials.password) {
+      setError('E-posta ve şifre alanları zorunludur.');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      // Demo login kontrolü
-      if (credentials.email === 'admin@example.com' && credentials.password === 'password') {
+      // Auth servisi üzerinden veritabanındaki admin kullanıcılarını kontrol et
+      const result = await authService.login(credentials.email, credentials.password);
+      
+      if (result.success) {
         setLoginSuccess(true);
         
         setTimeout(() => {
           setIsLoading(false);
-          // AuthContext aracılığıyla giriş yap
-          login({ 
-            name: 'Admin User', 
-            email: credentials.email, 
-            role: 'admin' 
+          // AuthContext aracılığıyla kullanıcı bilgilerini ayarla ve giriş yap
+          login({
+            id: result.data.id,
+            name: `${result.data.first_name} ${result.data.last_name}`,
+            email: result.data.email,
+            role: result.data.role,
+            photo: result.data.photo_url,
+            phone: result.data.phone
           });
-          // AuthContext router yönlendirmesini otomatik yapacak
+          // AuthContext router yönlendirmesi yapacak
         }, 800);
       } else {
-        setTimeout(() => {
-          setIsLoading(false);
-          setError('Geçersiz e-posta veya şifre');
-        }, 800);
+        setIsLoading(false);
+        setError(result.error || 'Giriş yapılamadı');
       }
     } catch (error) {
       setIsLoading(false);
@@ -55,8 +72,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden w-full max-w-4xl flex flex-col lg:flex-row">
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-800 to-gray-900 flex items-center justify-center">
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden w-full max-w-4xl flex flex-col lg:flex-row">
         {/* Sol Taraf - Görsel */}
         <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 p-10 relative">
           <div className="absolute inset-0 bg-black opacity-10"></div>
@@ -99,15 +116,20 @@ export default function LoginPage() {
         <div className="w-full lg:w-1/2 p-6 sm:p-10">
           <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Girişi</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
+              <h1 className="text-2xl font-bold text-white">Admin Girişi</h1>
+              <p className="text-gray-400 mt-2">
                 Yönetim panelinize erişmek için giriş yapın
               </p>
+              {fromPath && (
+                <div className="mt-2 text-sm text-indigo-300">
+                  {fromPath !== '/admin' ? `Erişmek istediğiniz sayfa: ${fromPath}` : ''}
+                </div>
+              )}
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
                   E-posta Adresi
                 </label>
                 <div className="relative">
@@ -121,14 +143,15 @@ export default function LoginPage() {
                     autoComplete="email"
                     value={credentials.email}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="admin@example.com"
+                    required
                   />
                 </div>
               </div>
               
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
                   Şifre
                 </label>
                 <div className="relative">
@@ -142,12 +165,13 @@ export default function LoginPage() {
                     autoComplete="current-password"
                     value={credentials.password}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    className="appearance-none block w-full pl-10 pr-10 py-2.5 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="••••••••"
+                    required
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
                   >
@@ -162,28 +186,28 @@ export default function LoginPage() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-700"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
                     Beni hatırla
                   </label>
                 </div>
                 
                 <div className="text-sm">
-                  <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+                  <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300">
                     Şifremi unuttum
                   </a>
                 </div>
               </div>
               
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3 text-sm text-red-600 dark:text-red-400">
+                <div className="bg-red-900/30 border border-red-800 rounded-md p-3 text-sm text-red-400">
                   {error}
                 </div>
               )}
               
               {loginSuccess && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3 text-sm text-green-600 dark:text-green-400">
+                <div className="bg-green-900/30 border border-green-800 rounded-md p-3 text-sm text-green-400">
                   Giriş başarılı! Yönlendiriliyorsunuz...
                 </div>
               )}
@@ -208,10 +232,10 @@ export default function LoginPage() {
             </form>
             
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-400">
                 Demo giriş bilgileri:
               </p>
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">
+              <p className="text-sm font-semibold text-gray-300 mt-1">
                 admin@example.com / password
               </p>
             </div>
@@ -219,5 +243,18 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Ana bileşen - Suspense ile sarmalanmış
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="fixed inset-0 bg-gradient-to-br from-indigo-800 to-gray-900 flex items-center justify-center">
+        <div className="text-white">Yükleniyor...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

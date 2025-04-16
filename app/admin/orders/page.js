@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import supabase from "../../../src/utils/supabase";
 import { FaBox, FaRegClock, FaTruck, FaCheck, FaSearch, FaFilter, FaSync, FaUser, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaInfoCircle, FaCalendarAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { requireAuth } from '../../../src/contexts/AuthContext';
 
 const STATUS_OPTIONS = [
   "Beklemede",
@@ -26,7 +27,7 @@ const STATUS_ICONS = {
   "Teslim Edildi": <FaCheck className="mr-1.5" />
 };
 
-export default function OrdersAdminPage() {
+function OrdersAdminPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,7 +58,7 @@ export default function OrdersAdminPage() {
     if (error) {
       setError(error.message);
     } else {
-      setOrders(data || []);
+    setOrders(data || []);
       
       // İstatistikleri hesapla
       if (data) {
@@ -349,9 +350,9 @@ export default function OrdersAdminPage() {
                   {/* Sipariş Öğeleri */}
                   <div className="text-sm text-black font-medium my-2">
                     {typeof order.items === 'string'
-                      ? order.items
-                      : Array.isArray(order.items)
-                        ? order.items.map(i => `${i.product_name}, ${i.quantity}`).join(' | ')
+                  ? order.items
+                  : Array.isArray(order.items)
+                    ? order.items.map(i => `${i.product_name}, ${i.quantity}`).join(' | ')
                         : 'Ürün bilgisi bulunamadı'}
                   </div>
                   
@@ -371,16 +372,16 @@ export default function OrdersAdminPage() {
                   <p className="text-sm text-gray-500">Durum Güncelle</p>
                   
                   <div className="flex items-center">
-                    <select
-                      value={order.status}
-                      onChange={e => updateStatus(order.id, e.target.value)}
-                      disabled={updatingId === order.id}
+                <select
+                  value={order.status}
+                  onChange={e => updateStatus(order.id, e.target.value)}
+                  disabled={updatingId === order.id}
                       className={`pl-3 pr-8 py-2 rounded-md text-sm font-medium ${getStatusClassName(order.status)} focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    >
-                      {STATUS_OPTIONS.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
+                >
+                  {STATUS_OPTIONS.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
                     
                     {updatingId === order.id && (
                       <div className="animate-spin ml-2 h-4 w-4 border-t-2 border-blue-500 rounded-full"></div>
@@ -395,3 +396,6 @@ export default function OrdersAdminPage() {
     </div>
   );
 }
+
+// Giriş yapmadan erişimi engelle
+export default requireAuth(OrdersAdminPage);
