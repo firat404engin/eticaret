@@ -18,6 +18,7 @@ import {
   FaCheckDouble
 } from 'react-icons/fa';
 import { useAuth } from '../../../src/contexts/AuthContext';
+import supabase from '../../../src/utils/supabase';
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -52,6 +53,23 @@ export default function MessagesPage() {
   // İlk yükleme
   useEffect(() => {
     fetchMessages();
+  }, []);
+  
+  // Gerçek zamanlı abonelik - Supabase realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:contact_messages')
+      .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'contact_messages'
+        }, (payload) => {
+          console.log('Yeni mesaj:', payload.new);
+          setMessages(prev => [...prev, payload.new]);
+        })
+      .subscribe();
+
+    return () => channel.unsubscribe();
   }, []);
   
   // Mesajın okundu durumunu güncelle
