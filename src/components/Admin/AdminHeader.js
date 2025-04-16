@@ -4,19 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { 
   FaBell, 
   FaSearch, 
-  FaMoon, 
-  FaSun, 
   FaUser 
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import supabase from '../../../src/utils/supabase';
 
 const AdminHeader = () => {
-  const [darkMode, setDarkMode] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const { user, logout } = useAuth();
+
+  // Sayfa yüklendiğinde dark mode'u aktifleştir
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
 
   // Canlı bildirim abonesi
   useEffect(() => {
@@ -72,13 +74,8 @@ const AdminHeader = () => {
     };
   }, [showUserMenu]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
   return (
-    <header className="bg-white dark:bg-gray-800 shadow z-30">
+    <header className="bg-gray-800 shadow z-30">
       <div className="flex items-center justify-between px-6 h-16">
         {/* Right Side - User Profile & Notifications */}
         <div className="flex items-center space-x-4 ml-auto">
@@ -89,7 +86,7 @@ const AdminHeader = () => {
                 setShowNotifications(!showNotifications);
                 setShowUserMenu(false);
               }}
-              className="p-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full relative"
+              className="p-2 text-gray-300 hover:bg-gray-700 rounded-full relative"
               aria-label="Notifications"
             >
               <FaBell className="w-5 h-5" />
@@ -140,12 +137,12 @@ const AdminHeader = () => {
             </button>
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border dark:border-gray-700">
-                <div className="px-4 py-2 border-b dark:border-gray-700 flex justify-between items-center">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Bildirimler</h3>
+              <div className="absolute right-0 mt-2 w-80 bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
+                <div className="px-4 py-2 border-b border-gray-700 flex justify-between items-center">
+                  <h3 className="text-sm font-semibold text-gray-200">Bildirimler</h3>
                   <button
                     onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="text-xs text-indigo-400 hover:underline"
                   >
                     Tümünü okundu işaretle
                   </button>
@@ -155,25 +152,25 @@ const AdminHeader = () => {
                     notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                          !notification.read ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
+                        className={`px-4 py-3 hover:bg-gray-700 ${
+                          !notification.read ? 'bg-indigo-900/20' : ''
                         }`}
                       >
                         <div className="flex justify-between">
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                          <p className="text-sm font-medium text-gray-200">
                             {notification.message}
                           </p>
                           {!notification.read && (
                             <span className="inline-flex h-2 w-2 rounded-full bg-indigo-500"></span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-400 mt-1">
                           {new Date(notification.ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <p className="px-4 py-6 text-center text-sm text-gray-400">
                       Bildirim bulunmuyor
                     </p>
                   )}
@@ -181,16 +178,6 @@ const AdminHeader = () => {
               </div>
             )}
           </div>
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <FaSun className="w-5 h-5" /> : <FaMoon className="w-5 h-5" />}
-          </button>
-
-          
 
           {/* User Menu */}
           <div className="relative user-menu">
@@ -204,24 +191,24 @@ const AdminHeader = () => {
               <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white">
                 <FaUser className="w-4 h-4" />
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200 hidden md:block">
+              <span className="ml-2 text-sm font-medium text-gray-200 hidden md:block">
                 {user?.name || 'Admin User'}
               </span>
             </button>
 
             {/* User Dropdown */}
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border dark:border-gray-700">
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
+                <a href="#" className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">
                   Profilim
                 </a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <a href="#" className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">
                   Ayarlar
                 </a>
-                <div className="border-t dark:border-gray-700"></div>
+                <div className="border-t border-gray-700"></div>
                 <button 
                   onClick={logout}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
                 >
                   Çıkış Yap
                 </button>

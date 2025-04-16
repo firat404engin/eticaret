@@ -146,7 +146,11 @@ export async function POST(request) {
     // E-posta yapılandırması
     const msg = {
       to: email,
-      from: process.env.SENDGRID_FROM_EMAIL || 'no-reply@aicodessolutions.com', // Gönderen e-posta adresi
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || 'noreply@aicodessolutions.com',
+        name: 'AI Codes Solutions'
+      },
+      replyTo: 'firatengin73@gmail.com', // Müşteri cevapları bu adrese gider
       subject: 'Siparişiniz Alındı - Sipariş #' + orderNumber,
       html: htmlContent,
     };
