@@ -33,16 +33,7 @@ export default function MessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/messages', {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        },
-        cache: 'no-store',
-        next: { revalidate: 0 }
-      });
+      const response = await fetch('/api/admin/messages');
       const data = await response.json();
       
       if (!response.ok) {

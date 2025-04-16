@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
-import supabase, { getFreshSupabase } from '../../../../src/utils/supabase';
+import supabase from '../../../../src/utils/supabase';
 
 // Tüm mesajları getiren endpoint
 export async function GET() {
   try {
-    console.log('Mesajlar API çağrıldı:', new Date().toISOString());
-    
-    // Yeni ve temiz bir bağlantı kullan
-    const freshSupabase = getFreshSupabase();
-    
     // Tüm mesajları getir, en yeniler en üstte olacak şekilde
-    const { data, error } = await freshSupabase
+    const { data, error } = await supabase
       .from('contact_messages')
       .select('*')
       .order('created_at', { ascending: false });
@@ -23,17 +18,7 @@ export async function GET() {
       );
     }
     
-    console.log(`Mesaj sayısı: ${data?.length || 0}`);
-    
-    // No-cache headers ekle
-    const response = NextResponse.json({ messages: data }, { status: 200 });
-    
-    // Cache kontrol başlıkları
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    
-    return response;
+    return NextResponse.json({ messages: data }, { status: 200 });
   } catch (error) {
     console.error('İstek işlenirken hata:', error);
     return NextResponse.json(

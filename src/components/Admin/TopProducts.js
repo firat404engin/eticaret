@@ -13,7 +13,7 @@ const TopProducts = () => {
     { id: 5, name: 'Premium Sweatshirt', category: 'Giyim', sales: 243, percentage: 43 },
   ];
 
-  // Color assignments for the progress bars
+  // Color assignments for the progress barsa
   const getColorClass = (index) => {
     const colors = ['bg-indigo-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500'];
     return colors[index % colors.length];
